@@ -60,7 +60,8 @@ Align a sample against a transcriptome
 ```
 docker-compose run --rm pile \
   python3 pile/transcriptome-align.py \
-  doi:10.1126_sciadv.aba2498 SRR9331961 SRR9331959_algae_denovo
+  doi:10.1126_sciadv.aba2498 SRR9331961 SRR9331959_algae_denovo \
+  --cpus 6
 ```
 
 Find an alignment for a transcript
