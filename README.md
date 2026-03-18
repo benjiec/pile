@@ -77,6 +77,14 @@ PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
   SRR9331961 SRR9331959_algae_denovo TRINITY_DN7562_c0_g1_i1
 ``` 
 
+Create alignment pileups of transcripts in a second transcriptome, releated to a transcript from a first transcriptome
+
+```
+PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile bash -c \
+  "pile/transcriptome-find-transcript.py GCA_947184155.2 CAL1161012.1 | \
+   pile/transcriptome-search.py SRR9331959_algae_denovo - | \
+   pile/alignment-extract.py SRR9331959 SRR9331959_algae_denovo -"
+
 
 ## Insider a Docker Container
 

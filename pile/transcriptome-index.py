@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pile import run_command, Defaults
 
 

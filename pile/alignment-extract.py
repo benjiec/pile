@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import re
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,7 +7,25 @@ import matplotlib.colors as mcolors
 from pile import run_command, Defaults, process_file_or_literal
 
 
-def final_robust_parse(file_path, transcript_len=1280):
+def final_robust_parse(transcript_accession, file_path):
+    transcript_len = 0
+    with open(file_path, 'r') as f:
+        for line in f:
+            if line.startswith('@SQ'):
+                # Extract SN (Name) and LN (Length)
+                sn_match = re.search(r'SN:([^\t\n\r]+)', line)
+                ln_match = re.search(r'LN:(\d+)', line)
+            
+                if sn_match and ln_match:
+                    found_acc = sn_match.group(1)
+                    if found_acc == transcript_accession:
+                        transcript_len = int(ln_match.group(1))
+
+            elif not line.startswith('@'):
+                break
+
+    assert(transcript_len > 0)
+
     depth = np.zeros(transcript_len + 1)
     snps = {}
     clips = {}
@@ -81,12 +101,12 @@ def final_robust_parse(file_path, transcript_len=1280):
                 freq = clips[i] / d
                 if freq >= 0.1: clip_final.append((i, freq))
             
-    return depth, consensus, snp_final, indel_final, clip_final
+    return transcript_len, depth, consensus, snp_final, indel_final, clip_final
 
 
-def make_pileup(samfile, pngfile):
+def make_pileup(transcript_accession, samfile, pngfile):
 
-    depth, consensus, snp_data, indel_data, clip_data = final_robust_parse(samfile)
+    transcript_len, depth, consensus, snp_data, indel_data, clip_data = final_robust_parse(transcript_accession, samfile)
 
     window = 50
     gc = []
@@ -117,11 +137,11 @@ def make_pileup(samfile, pngfile):
 
     ax1.set_ylabel('Read Depth')
     ax1.set_title('Pileup Visualization: Sample 1 (Divergence Spectrum)')
-    ax1.set_xlim(-80, 1360)
+    ax1.set_xlim(-80, transcript_len+80)
     ax1.legend(loc='upper right')
 
     cmap = mcolors.LinearSegmentedColormap.from_list("GC", ["blue", "yellow", "red"])
-    ax2.imshow(np.array(gc).reshape(1, -1), aspect='auto', cmap=cmap, norm=mcolors.Normalize(0.2, 0.8), extent=[0, 1280, 0, 1])
+    ax2.imshow(np.array(gc).reshape(1, -1), aspect='auto', cmap=cmap, norm=mcolors.Normalize(0.2, 0.8), extent=[0, transcript_len, 0, 1])
     ax2.set_yticks([])
     ax2.set_ylabel('GC %')
     ax2.set_xlabel('Transcript Position (bp)')
@@ -135,10 +155,12 @@ def process_transcript(workspace, sra_accession, transcriptome, transcript_acces
     sam_transcript_fn = Defaults.transcript_alignment_filename(workspace, sra_accession, transcriptome, transcript_accession, "sam")
     sam_transcript_png_fn = Defaults.transcript_alignment_filename(workspace, sra_accession, transcriptome, transcript_accession, "png")
 
+    # very lazy: run first time with -h to include header, then second time w/o since we don't care about the headers
+    run_command("samtools", "view", "-h", bam_fn, transcript_accession, "-o", sam_transcript_fn)
+    make_pileup(transcript_accession, sam_transcript_fn, sam_transcript_png_fn)
+    print(sam_transcript_png_fn)
     run_command("samtools", "view", bam_fn, transcript_accession, "-o", sam_transcript_fn)
     print(sam_transcript_fn)
-    make_pileup(sam_transcript_fn, sam_transcript_png_fn)
-    print(sam_transcript_png_fn)
 
 
 if __name__ == "__main__":
