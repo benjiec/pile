@@ -81,9 +81,19 @@ Create alignment pileups of transcripts in a second transcriptome, releated to a
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile bash -c \
-  "pile/transcriptome-find-transcript.py GCA_947184155.2 CAL1161012.1 | \
+  "pile/transcriptome-find.py GCA_947184155.2 CAL1161012.1 | \
    pile/transcriptome-search.py SRR9331959_algae_denovo - | \
    pile/alignment-extract.py SRR9331959 SRR9331959_algae_denovo -"
+```
+
+Same as above, but find the protein sequence instead of creating pileups
+
+```
+PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile bash -c \
+  "pile/transcriptome-find.py GCA_947184155.2 CAL1161012.1 | \
+   pile/transcriptome-search.py SRR9331959_algae_denovo - | \
+   pile/transcriptome-find.py -f -p SRR9331959_algae_denovo -"
+```
 
 
 ## Insider a Docker Container

@@ -50,11 +50,12 @@ scripts/cluster/mmseqs-cluster-trinity-transcripts \
   trinity_SRR9331959_algae.Trinity.fasta
 ```
 
-Use TransDecoder to compute ORFs
+Use TransDecoder to compute ORFs. Second step may not be necessary, just use
+the computed longest_orfs in the output directory
 
 ```
-TransDecoder.LongOrfs -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz
-TransDecoder.Predict -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz -T 8
+TransDecoder.LongOrfs -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz -m 30
+# TransDecoder.Predict -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz -T 8
 ```
 
 
