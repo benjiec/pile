@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /pile
 
 # (Optional) Add your app directory to the PATH
-ENV PATH="/app:${PATH}"
+ENV PATH="/pile:${PATH}"
 ENV PYTHONPATH="/pile"
 
 # We don't use ENTRYPOINT or CMD because Nextflow 

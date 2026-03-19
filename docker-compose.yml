@@ -3,8 +3,8 @@ services:
     build:
       context: .
     environment:
-      - PILE_WORKSPACES_DIR=/data
+      - PILE_WORKSPACES_DIR=/users/pile
       - PILE_WORKSPACE
     volumes:
       - .:/pile
-      - ${PILE_WORKSPACES_DIR}:/data
+      - ${PILE_WORKSPACES_DIR}:/users/pile

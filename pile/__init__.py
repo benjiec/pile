@@ -67,10 +67,12 @@ class Defaults(object):
         return ws
 
     @staticmethod
-    def workspace_dir(workspace):
+    def workspace_dir(workspace=None):
         wsdir = os.environ.get('PILE_WORKSPACES_DIR')
         if wsdir is None or not wsdir.startswith("/"):
             raise Exception("PILE_WORKSPACES_DIR must be defined and must be an absolute path")
+        if workspace is None:
+            return wsdir
         if workspace.startswith("/"):
             raise Exception(f"Workspace {workspace} should not start with /")
         return str(Path(wsdir) / workspace)
@@ -82,6 +84,18 @@ class Defaults(object):
             yield temp_dir
 
     @staticmethod
+    def ncbi_dir():
+        return Defaults.workspace_dir("ncbi")
+
+    @staticmethod
+    def ncbi_genome_genomic(genome_accession):
+        return str(Path(Defaults.ncbi_dir()) / genome_accession / "genomic.fna")
+
+    @staticmethod
+    def ncbi_genome_proteins(genome_accession):
+        return str(Path(Defaults.ncbi_dir()) / genome_accession / "proteins.faa")
+
+    @staticmethod
     def reads_dir(workspace):
         dn = f"{Defaults.workspace_dir(workspace)}/reads"
         mkdir_exists(dn)
@@ -90,12 +104,22 @@ class Defaults(object):
     @staticmethod
     def read_1(workspace, sra_accession, gzip=True):
         fn = f"{Defaults.reads_dir(workspace)}/{sra_accession}_1.fastq"
-        return fn if gzip is False else f"{fn}.gz"
+        if gzip is False:
+            return fn
+        gzfn = Path(fn+".gz")
+        if gzfn.exists():
+            return str(gzfn)
+        return fn
 
     @staticmethod
     def read_2(workspace, sra_accession, gzip=True):
         fn = f"{Defaults.reads_dir(workspace)}/{sra_accession}_2.fastq"
-        return fn if gzip is False else f"{fn}.gz"
+        if gzip is False:
+            return fn
+        gzfn = Path(fn+".gz")
+        if gzfn.exists():
+            return str(gzfn)
+        return fn
 
     @staticmethod
     def transcriptomes_dir(workspace):
@@ -121,6 +145,14 @@ class Defaults(object):
     @staticmethod
     def transcriptome_cluster_fasta(workspace, transcriptome):
         return str(Path(Defaults.transcriptome_dir(workspace, transcriptome)) / "transcript_clusters.fna")
+
+    @staticmethod
+    def transcriptome_filtered_read_1(workspace, transcriptome, sra_accession):
+        return str(Path(Defaults.transcriptome_dir(workspace, transcriptome)) / f"{sra_accession}_filtered_1.fastq")
+
+    @staticmethod
+    def transcriptome_filtered_read_2(workspace, transcriptome, sra_accession):
+        return str(Path(Defaults.transcriptome_dir(workspace, transcriptome)) / f"{sra_accession}_filtered_2.fastq")
 
     @staticmethod
     def alignments_dir(workspace):

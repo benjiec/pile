@@ -34,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("sra_accession")
     parser.add_argument("transcriptome")
     parser.add_argument("--unclustered", action="store_true", default=False)
-    parser.add_argument("--cpus", default=2)
+    parser.add_argument("--cpus", default=4)
     args = parser.parse_args()
 
     bam_fn = Defaults.alignment_filename(Defaults.workspace(), args.sra_accession, args.transcriptome, "bam")

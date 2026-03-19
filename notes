@@ -3,6 +3,8 @@
 
 Reduce size of reads, starting with an existing reference genome.
 
+reference building
+
 ```
 bowtie2-build c_goreaui.fna c_goreaui.bowtie.index
 
@@ -50,16 +52,8 @@ scripts/cluster/mmseqs-cluster-trinity-transcripts \
   trinity_SRR9331959_algae.Trinity.fasta
 ```
 
-Use TransDecoder to compute ORFs. Second step may not be necessary, just use
-the computed longest_orfs in the output directory
 
-```
-TransDecoder.LongOrfs -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz -m 30
-# TransDecoder.Predict -t trinity_SRR9331959_algae.Trinity.fasta_rep_seq.fna.gz -T 8
-```
-
-
-## Aligning against reference rather than assembled transcriptome
+## Quantifying against reference rather than assembled transcriptome
 
 Building decoy-aware index, using genomic sequence as decoys, as reads may
 contain UTRs or pre-mRNAs not in the curated transcriptome (often just START to

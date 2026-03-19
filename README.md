@@ -40,14 +40,23 @@ For more details on the file naming conventions, see the `pile.Defaults` class.
 
 ## Docker Commands
 
-All commands require a workspace set using the PILE_WORKSPACE environment
-variable, which is passed to the container via `docker-compose.yml`.
+Use the following to make a bowtie index, on a path off the top workspaces
+directory (i.e. not specific to a workspace). E.g.
+
+```
+docker-compose run --rm pile \
+  python3 pile/bowtie_index.py ncbi/GCA_014633955.1/genomic.fna
+```
+
+All other commands require a workspace to be set using the PILE_WORKSPACE
+environment variable, which is passed to the container via
+`docker-compose.yml`.
 
 Fetching SRA reads
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
-  python3 pile/sra-fetch.py \
+  python3 pile/sra_fetch.py \
   SRR9331959
 ```
 
@@ -55,7 +64,7 @@ Indexing a transcriptome
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
-  python3 pile/transcriptome-index.py \
+  python3 pile/transcriptome_index.py \
   SRR9331959_algae_denovo
 ```
 
@@ -63,7 +72,7 @@ Align a sample against a transcriptome
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
-  python3 pile/transcriptome-align.py \
+  python3 pile/transcriptome_align.py \
   SRR9331961 SRR9331959_algae_denovo \
   --cpus 6
 ```
@@ -73,7 +82,7 @@ against a transcriptome
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
-  python3 pile/alignment-extract.py -a \
+  python3 pile/alignment_extract.py -a \
   SRR9331961 SRR9331959_algae_denovo TRINITY_DN7562_c0_g1_i1
 ``` 
 
@@ -81,19 +90,33 @@ Create alignment pileups of transcripts in a second transcriptome, releated to a
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile bash -c \
-  "pile/transcriptome-find.py GCA_947184155.2 CAL1161012.1 | \
-   pile/transcriptome-search.py SRR9331959_algae_denovo - | \
-   pile/alignment-extract.py SRR9331959 SRR9331959_algae_denovo -"
+  "pile/transcriptome_find.py GCA_947184155.2 CAL1161012.1 | \
+   pile/transcriptome_search.py SRR9331959_algae_denovo - | \
+   pile/alignment_extract.py SRR9331959 SRR9331959_algae_denovo -"
 ```
 
 Same as above, but find the protein sequence instead of creating pileups
 
 ```
 PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile bash -c \
-  "pile/transcriptome-find.py GCA_947184155.2 CAL1161012.1 | \
-   pile/transcriptome-search.py SRR9331959_algae_denovo - | \
-   pile/transcriptome-find.py -f -p SRR9331959_algae_denovo -"
+  "pile/transcriptome_find.py GCA_947184155.2 CAL1161012.1 | \
+   pile/transcriptome_search.py SRR9331959_algae_denovo - | \
+   pile/transcriptome_find.py -f -p SRR9331959_algae_denovo -"
 ```
+
+To filter reads for Trinity assembly
+
+```
+PILE_WORKSPACE=doi:10.1126_sciadv.aba2498 docker-compose run --rm pile \
+  python3 pile/assembly_filter_reads.py \
+    SRR9331961_algae_denovo \
+    SRR9331961 \
+    --remove GCA_014633955.1 \
+    --capture GCA_947184155.2
+```
+
+Actual Trinity assembly, do that inside a Docker container since there are
+various flags to use and memory issues to monitor.
 
 
 ## Insider a Docker Container
@@ -108,9 +131,29 @@ Search for a sequence
 
 ```
 bowtie2 --local -f -p 8 \
-  -x /data/doi:10.1126_sciadv.aba2498/transcriptomes/SRR9331959_algae_denovo/transcript_clusters.fna \
+  -x /users/pile/doi:10.1126_sciadv.aba2498/transcriptomes/SRR9331959_algae_denovo/transcript_clusters.fna \
   -U query.fasta \
   -S results.sam
+```
+
+Use TransDecoder to predict ORFs
+
+```
+TransDecoder.LongOrfs -t transcripts.fna -m 100
+```
+
+Trinity assembly, after you have filtered the reads. First cd to the workspace
+transcriptome directory.
+
+```
+Trinity --seqType fq \         
+        --left SRR9331961_filtered_1.fastq \
+        --right SRR9331961_filtered_2.fastq \
+        --max_memory 20G \
+        --CPU 8 \
+        --output transcript --no_normalize_reads
+
+TrinityStats.pl transcript.Trinity.fasta
 ```
 
 
