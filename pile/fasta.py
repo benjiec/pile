@@ -1,21 +1,24 @@
+import sys
 import gzip
 from contextlib import contextmanager
-from typing import Dict, List, Optional, Tuple
 
 
 @contextmanager
 def open_fasta_to_read(fn):
-    with open(fn, 'rb') as test_f:
-        is_gz = test_f.read(2) == b'\x1f\x8b'
-    opener = gzip.open if is_gz else open
-    with opener(fn, "rt", encoding="utf-8") as f:
-        yield f
+    if fn == "-":
+        yield sys.stdin
+    else:
+        with open(fn, 'rb') as test_f:
+            is_gz = test_f.read(2) == b'\x1f\x8b'
+        opener = gzip.open if is_gz else open
+        with opener(fn, "rt", encoding="utf-8") as f:
+            yield f
 
 
-def read_fasta_as_dict(path: str) -> Dict[str, str]:
-    sequences_by_accession: Dict[str, str] = {}
-    current_acc: Optional[str] = None
-    current_seq_parts: List[str] = []
+def read_fasta_as_dict(path):
+    sequences_by_accession = {}
+    current_acc = None
+    current_seq_parts = []
 
     with open_fasta_to_read(path) as f:
         for raw_line in f:

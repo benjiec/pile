@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("transcriptome")
     parser.add_argument("sequence_file")
-    parser.add_argument("--fasta", action="store_true", default=False)
+    parser.add_argument("--no-fasta", action="store_true", default=False)
     args = parser.parse_args()
 
     tx_fn = Defaults.transcriptome_fasta(Defaults.workspace(), args.transcriptome)
@@ -41,12 +41,11 @@ if __name__ == "__main__":
         raise Exception("Cannot find bowtie index")
 
     query_sequences = []
-
-    if args.fasta:
+    if args.no_fasta:
+        process_file_or_literal(False, args.sequence_file, lambda s: query_sequences.append(s))
+    else:
         queries = read_fasta_as_dict(args.sequence_file)
         query_sequences.extend(queries.values())
-    else:
-        process_file_or_literal(False, args.sequence_file, lambda s: query_sequences.append(s))
 
     hit_ids = bowtie2_search_sequence(tx_fn, query_sequences)
     for hit in hit_ids:

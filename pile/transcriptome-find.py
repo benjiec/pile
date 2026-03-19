@@ -27,19 +27,19 @@ if __name__ == "__main__":
 
     for accession in accessions:
         if accession in entries:
-            print(entries[accession])
+            print(f">{accession}\n{entries[accession]}")
         elif args.exact:
             raise Exception(f"Cannot find sequence with accession {accession}")
         else:
             found = False
             for k,v in entries.items():
                 if "_"+accession.lower()+"_" in k.lower():
-                    print(v)
+                    print(f">{k}\n{v}")
                     found = True
             if not found:
                 for k,v in entries.items():
                     if accession.lower() in k.lower() or k.lower() in accession.lower():
-                        print(v)
+                        print(f">{k}\n{v}")
                         found = True
             if not found:
                 raise Exception(f"Cannot find sequence with accession {accession}")
