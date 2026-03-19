@@ -22,6 +22,8 @@ PILE_WORKSPACES_DIR=...
 PILE_REFERENCE_DIR=...
 ```
 
+For clustering sequences, get the MMSeqs2 docker image: `docker pull ghcr.io/soedinglab/mmseqs2`
+
 
 ## Data Model and Directory Setup
 
@@ -155,6 +157,14 @@ Trinity --seqType fq \
 
 TrinityStats.pl transcript.Trinity.fasta
 ```
+
+If you have mmseqs Docker image, then use this to cluster transcripts
+
+```
+scripts/mmseqs-cluster-trinity-transcripts \
+  transcript.Trinity.fasta
+```
+
 
 
 ## Download data from NCBI SRA
